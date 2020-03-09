@@ -10,6 +10,14 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+out/*
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
+
+# Project Settings
+*.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/workspace.xml

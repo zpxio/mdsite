@@ -1,0 +1,15 @@
+---
+language: go
+
+go:
+  - "1.13.x"
+
+env:
+  global:
+    - GO111MODULE=on
+
+script:
+  - env GO111MODULE=on go test -v ./...
+
+after_script:
+  - curl -d "repo=github.com/zpxio/mdsite" https://goreportcard.com/checks
