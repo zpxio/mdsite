@@ -17,12 +17,10 @@
 package main
 
 import (
-	"flag"
+	"fmt"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
-	"net"
+	"github.com/zpxio/mdsite/pkg/config"
 	"os"
 	"os/signal"
 	"syscall"
@@ -33,17 +31,8 @@ func main() {
 
 	log.Infof("Starting up...")
 
-	viper.SetConfigName("config")
-
-	log.Infof("Initializing configuration")
-
-	// Initialize flags
-	pflag.Int("port", 80, "The port for unencrypted connections")
-	pflag.IP("listen", net.IPv4(0, 0, 0, 0), "The host IP to listen on for connections")
-
-	// Parse flags
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
+	conf := config.Create()
+	conf.Load()
 
 	// Set up signal monitoring
 	termSignals := make(chan os.Signal, 1)
@@ -52,6 +41,9 @@ func main() {
 
 	go func() {
 		shutdownSignal := <-termSignals
+		// Clear the output buffer.
+		//    ^ Super excessive... but it clears the line buffer if a ^C is printed and lets the logs be pretty.
+		fmt.Println()
 
 		log.Infof("Received shutdown signal: %s", shutdownSignal)
 		exitChan <- true
