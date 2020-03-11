@@ -21,6 +21,7 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
 	"github.com/zpxio/mdsite/pkg/config"
+	"github.com/zpxio/mdsite/pkg/server"
 	"os"
 	"os/signal"
 	"syscall"
@@ -38,6 +39,9 @@ func main() {
 	termSignals := make(chan os.Signal, 1)
 	exitChan := make(chan bool, 1)
 	signal.Notify(termSignals, syscall.SIGTERM, syscall.SIGINT)
+
+	s := server.CreateDispatcher(conf)
+	s.Start()
 
 	go func() {
 		shutdownSignal := <-termSignals

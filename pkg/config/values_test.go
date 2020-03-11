@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/suite"
+	"net"
 	"os"
 	"testing"
 )
@@ -42,6 +43,7 @@ func (t *ValuesTestSuite) TestValueParse_Defaults() {
 	loadVarArgs(v)
 
 	t.Equal(DefaultSitePath, v.SitePath)
+	t.Equal(DefaultSiteConfig, v.ConfigPath)
 	t.Equal(DefaultPort, v.ListenPort)
 	t.Equal(DefaultIp, v.ListenIp)
 }
@@ -53,6 +55,24 @@ func (t *ValuesTestSuite) TestValueParse_Port() {
 	loadVarArgs(v, "--port", fmt.Sprintf("%d", p))
 
 	t.Equal(p, v.ListenPort)
+}
+
+func (t *ValuesTestSuite) TestValueParse_Interface() {
+	v := Create()
+
+	var i = net.IPv4(1, 2, 3, 4)
+	loadVarArgs(v, "--listen", i.String())
+
+	t.Equal(i, v.ListenIp)
+}
+
+func (t *ValuesTestSuite) TestValueParse_Config() {
+	v := Create()
+
+	var c = "/etc/config"
+	loadVarArgs(v, "--config", c)
+
+	t.Equal(c, v.ConfigPath)
 }
 
 func TestExampleTestSuite(t *testing.T) {

@@ -23,7 +23,7 @@ run: build
 
 testrun: build
 	@echo "Base Path: ${BASEDIR}"
-	./${BUILD_TARGET}
+	./${BUILD_TARGET} --test
 
 test:
 	$(GO_TEST) -v ./...

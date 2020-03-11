@@ -20,22 +20,25 @@ import (
 	"flag"
 	"github.com/apex/log"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 	"net"
 	"os"
 )
 
 const (
-	DefaultSitePath        = "."
-	DefaultPort     uint16 = 80
+	DefaultSitePath          = "."
+	DefaultSiteConfig        = "../config"
+	DefaultPort       uint16 = 80
 )
 
 var DefaultIp net.IP = net.IPv4(0, 0, 0, 0)
 
 type Values struct {
 	SitePath   string
+	ConfigPath string
 	ListenIp   net.IP
 	ListenPort uint16
+
+	TestMode bool
 }
 
 func Create() *Values {
@@ -47,14 +50,15 @@ func Create() *Values {
 }
 
 func (v *Values) setupFlags() {
-	viper.SetConfigName("config")
-
 	log.Infof("Initializing configuration")
 
 	// Initialize flags
 	pflag.StringVar(&v.SitePath, "site", DefaultSitePath, "The path to the directory containing the site to serve")
+	pflag.StringVar(&v.ConfigPath, "config", DefaultSiteConfig, "The path to the directory containing the site configuration")
 	pflag.Uint16Var(&v.ListenPort, "port", DefaultPort, "The port for unencrypted connections")
 	pflag.IPVar(&v.ListenIp, "listen", DefaultIp, "The host IP to listen on for connections")
+
+	pflag.BoolVar(&v.TestMode, "test", false, "Enable testing mode (integration, not unit)")
 }
 
 func (v *Values) Load() {
@@ -62,7 +66,17 @@ func (v *Values) Load() {
 }
 
 func (v *Values) LoadAll(a []string) {
+	log.Infof("Loading configuration.")
+
 	// Parse flags
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.CommandLine.Parse(a)
+
+	// Post-processing, overrides, and inference
+
+	// Test Mode enables ephemeral port and so forth
+	if v.TestMode {
+		log.Info("Enabling test mode.")
+		v.ListenPort = 0
+	}
 }

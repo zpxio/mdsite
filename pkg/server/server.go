@@ -17,6 +17,8 @@
 package server
 
 import (
+	"fmt"
+	"github.com/apex/log"
 	"github.com/gin-gonic/gin"
 	"github.com/zpxio/mdsite/pkg/config"
 	"net"
@@ -24,18 +26,20 @@ import (
 
 type Dispatcher struct {
 	engine   *gin.Engine
-	bindIp   net.IP
-	bindPort uint16
+	conf     *config.Values
+	bindAddr *net.TCPAddr
 }
 
 func CreateDispatcher(v *config.Values) *Dispatcher {
 
 	// Create the Gin Engine
+	gin.SetMode(gin.ReleaseMode)
 	e := gin.Default()
+	log.Infof("Gin startup complete")
 
 	d := Dispatcher{
 		engine: e,
-		bindIp: v.ListenIp,
+		conf:   v,
 	}
 	return &d
 }
@@ -45,5 +49,32 @@ func (d *Dispatcher) AttachMiddleware() {
 }
 
 func (d *Dispatcher) Start() {
-	d.engine.Run()
+
+	listenAddr := fmt.Sprintf("%s:%d", d.conf.ListenIp.String(), d.conf.ListenPort)
+	log.Infof("Starting server on: %s", listenAddr)
+
+	// Start a listener
+	l, err := net.Listen("tcp", listenAddr)
+	if err != nil {
+		log.Fatalf("Failed to set up server socket: %s", err)
+	}
+	lAddr := l.Addr()
+
+	var addrValid bool
+	d.bindAddr, addrValid = lAddr.(*net.TCPAddr)
+	if !addrValid {
+		log.Fatalf("Abnormal binding issue: Listener address is not a TCP address (%T)", lAddr)
+	}
+
+	// Report address binding
+	listenIp := d.bindAddr.IP.String()
+	if listenIp == "::" {
+		listenIp = "<all>"
+	}
+	log.Infof("Listening on interface: %s", listenIp)
+	log.Infof("Listening on port: %d", d.bindAddr.Port)
+
+	go func() {
+		d.engine.RunListener(l)
+	}()
 }
