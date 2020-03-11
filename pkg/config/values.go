@@ -70,7 +70,10 @@ func (v *Values) LoadAll(a []string) {
 
 	// Parse flags
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.CommandLine.Parse(a)
+	err := pflag.CommandLine.Parse(a)
+	if err != nil {
+		log.Fatalf("Error reading command options: %s", err)
+	}
 
 	// Post-processing, overrides, and inference
 
