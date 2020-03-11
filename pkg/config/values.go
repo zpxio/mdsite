@@ -30,7 +30,7 @@ const (
 	DefaultPort       uint16 = 80
 )
 
-var DefaultIp net.IP = net.IPv4(0, 0, 0, 0)
+var DefaultIp = net.IPv4(0, 0, 0, 0)
 
 type Values struct {
 	SitePath   string
