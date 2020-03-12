@@ -42,14 +42,19 @@ type Values struct {
 }
 
 func Create() *Values {
-	v := Values{}
+	v := Values{
+		SitePath:   DefaultSitePath,
+		ConfigPath: DefaultSiteConfig,
+		ListenIp:   DefaultIp,
+		ListenPort: DefaultPort,
 
-	v.setupFlags()
+		TestMode: false,
+	}
 
 	return &v
 }
 
-func (v *Values) setupFlags() {
+func SetupFlags(v *Values) {
 	log.Infof("Initializing configuration")
 
 	// Initialize flags
@@ -79,7 +84,13 @@ func (v *Values) LoadAll(a []string) {
 
 	// Test Mode enables ephemeral port and so forth
 	if v.TestMode {
-		log.Info("Enabling test mode.")
-		v.ListenPort = 0
+		v.EnableTestMode()
 	}
+}
+
+func (v *Values) EnableTestMode() {
+	v.TestMode = true
+
+	log.Info("Enabling test mode.")
+	v.ListenPort = 0
 }

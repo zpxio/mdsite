@@ -33,6 +33,7 @@ func main() {
 	log.Infof("Starting up...")
 
 	conf := config.Create()
+	config.SetupFlags(conf)
 	conf.Load()
 
 	// Set up signal monitoring

@@ -17,17 +17,22 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"github.com/apex/log"
 	"github.com/gin-gonic/gin"
 	"github.com/zpxio/mdsite/pkg/config"
 	"net"
+	"net/http"
+	"net/url"
 )
 
 type Dispatcher struct {
-	engine   *gin.Engine
-	conf     *config.Values
-	bindAddr *net.TCPAddr
+	engine     *gin.Engine
+	conf       *config.Values
+	bindAddr   *net.TCPAddr
+	clientAddr string
+	server     *http.Server
 }
 
 func CreateDispatcher(v *config.Values) *Dispatcher {
@@ -41,7 +46,14 @@ func CreateDispatcher(v *config.Values) *Dispatcher {
 		engine: e,
 		conf:   v,
 	}
+
+	d.AttachUtility()
+
 	return &d
+}
+
+func (d *Dispatcher) AttachUtility() {
+	AttachPing(d)
 }
 
 func (d *Dispatcher) AttachMiddleware() {
@@ -59,6 +71,7 @@ func (d *Dispatcher) Start() {
 		log.Fatalf("Failed to set up server socket: %s", err)
 	}
 	lAddr := l.Addr()
+	d.clientAddr = lAddr.String()
 
 	var addrValid bool
 	d.bindAddr, addrValid = lAddr.(*net.TCPAddr)
@@ -75,6 +88,25 @@ func (d *Dispatcher) Start() {
 	log.Infof("Listening on port: %d", d.bindAddr.Port)
 
 	go func() {
-		d.engine.RunListener(l)
+		server := http.Server{Handler: d.engine}
+		d.server = &server
+		err := d.server.Serve(l)
+		if err != nil {
+			log.Fatalf("Error while trying to start server: %s", err)
+		}
 	}()
+}
+
+func (d *Dispatcher) Shutdown() {
+	err := d.server.Shutdown(context.Background())
+	if err != nil {
+		log.Warnf("Error while trying to shut down: %s", err)
+	}
+}
+
+func (d *Dispatcher) ServerUrl() url.URL {
+	return url.URL{
+		Scheme: "http",
+		Host:   d.clientAddr,
+	}
 }

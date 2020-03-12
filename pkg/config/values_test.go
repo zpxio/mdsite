@@ -39,6 +39,7 @@ func loadVarArgs(v *Values, a ...string) {
 
 func (t *ValuesTestSuite) TestValueParse_Defaults() {
 	v := Create()
+	SetupFlags(v)
 
 	loadVarArgs(v)
 
@@ -50,6 +51,7 @@ func (t *ValuesTestSuite) TestValueParse_Defaults() {
 
 func (t *ValuesTestSuite) TestValueParse_Port() {
 	v := Create()
+	SetupFlags(v)
 
 	var p uint16 = 23456
 	loadVarArgs(v, "--port", fmt.Sprintf("%d", p))
@@ -59,6 +61,7 @@ func (t *ValuesTestSuite) TestValueParse_Port() {
 
 func (t *ValuesTestSuite) TestValueParse_Interface() {
 	v := Create()
+	SetupFlags(v)
 
 	var i = net.IPv4(1, 2, 3, 4)
 	loadVarArgs(v, "--listen", i.String())
@@ -68,6 +71,7 @@ func (t *ValuesTestSuite) TestValueParse_Interface() {
 
 func (t *ValuesTestSuite) TestValueParse_Config() {
 	v := Create()
+	SetupFlags(v)
 
 	var c = "/etc/config"
 	loadVarArgs(v, "--config", c)
@@ -75,6 +79,6 @@ func (t *ValuesTestSuite) TestValueParse_Config() {
 	t.Equal(c, v.ConfigPath)
 }
 
-func TestExampleTestSuite(t *testing.T) {
+func TestValueTestSuite(t *testing.T) {
 	suite.Run(t, new(ValuesTestSuite))
 }
