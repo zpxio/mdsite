@@ -13,6 +13,12 @@ BUILD_TARGET := ${BUILD_DIR}/${BUILD_EXE}
 
 BASEDIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
+# Optional stuff for demos/samples
+SITE_PORT := 9999
+SITE_BASE := ${BASEDIR}/sample
+SITE_PATH := ${SITE_BASE}/site
+SITE_CONF := ${SITE_BASE}/config
+
 build:
 	@-mkdir -p ${BUILD_DIR}
 	@-echo "BUILD: ${BUILD_TARGET}"
@@ -21,9 +27,9 @@ build:
 run: build
 	./${BUILD_TARGET}
 
-testrun: build
+sample: build
 	@echo "Base Path: ${BASEDIR}"
-	./${BUILD_TARGET} --test
+	./${BUILD_TARGET} --port ${SITE_PORT} --site ${SITE_PATH} --config ${SITE_CONF}
 
 test:
 	$(GO_TEST) -v ./...
