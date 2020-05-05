@@ -17,9 +17,19 @@
 package server
 
 import (
+	"github.com/apex/log"
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"github.com/zpxio/mdsite/pkg/resource"
+	"os"
+	"path"
 )
+
+var resourceRenderer = make(map[string]resource.Renderer)
+var missingRenderer = resource.MissingResource{}
+
+func init() {
+	resourceRenderer["md"] = &resource.MarkdownResource{}
+}
 
 type PageData struct {
 	content []byte
@@ -30,9 +40,41 @@ func AttachPageHandler(d *Dispatcher) {
 }
 
 func Page(c *gin.Context) {
+	resource := c.Request.URL.Path
+	renderer, rcFile := FindResourceFile(c, resource)
 
-	path := c.Request.URL.Path
+	renderer.Render(c, rcFile)
+}
 
-	//c.Header("Content-Type", "")
-	c.String(http.StatusOK, path)
+func FindResourceFile(c *gin.Context, resource string) (resource.Renderer, string) {
+	base := SiteBaseDirectory(c)
+	rcPrefix := path.Join(base, resource)
+
+	for suffix, renderer := range resourceRenderer {
+		rcPath := rcPrefix + "." + suffix
+		if fileExists(rcPath) {
+			return renderer, rcPath
+		}
+	}
+
+	return &missingRenderer, resource
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+
+		log.Errorf("Could not resolve file due to unexpected error: %s", err)
+		return false
+	} else {
+		return true
+	}
+}
+
+func RenderPath(path string, c *gin.Context) {
+
 }

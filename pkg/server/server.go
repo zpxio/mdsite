@@ -47,6 +47,11 @@ func CreateDispatcher(v *config.Values) *Dispatcher {
 		conf:   v,
 	}
 
+	// Attach config via middleware
+	e.Use(AddContextConfiguration(v))
+
+	e.Use(gin.Recovery())
+
 	d.AttachUtility()
 	d.AttachPages()
 
