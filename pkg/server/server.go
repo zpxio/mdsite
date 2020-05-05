@@ -48,12 +48,18 @@ func CreateDispatcher(v *config.Values) *Dispatcher {
 	}
 
 	d.AttachUtility()
+	d.AttachPages()
 
 	return &d
 }
 
 func (d *Dispatcher) AttachUtility() {
 	AttachPing(d)
+}
+
+func (d *Dispatcher) AttachPages() {
+	AttachIndex(d)
+	AttachPageHandler(d)
 }
 
 func (d *Dispatcher) AttachMiddleware() {
