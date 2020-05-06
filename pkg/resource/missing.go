@@ -24,9 +24,15 @@ import (
 type MissingResource struct {
 }
 
-func (r *MissingResource) Render(c *gin.Context, path string) {
-	c.Writer.Header().Set("X-QuickSite-Mode", "Missing")
+func (r MissingResource) MediaType() string {
+	return "text/html"
+}
 
+func (r MissingResource) ResourceMode() string {
+	return "Not-Found"
+}
+
+func (r MissingResource) Render(c *gin.Context, path string) {
 	c.Status(http.StatusNotFound)
 
 	c.Writer.WriteString("Missing: ")

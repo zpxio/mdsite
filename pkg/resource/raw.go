@@ -21,9 +21,15 @@ import "github.com/gin-gonic/gin"
 type RawResource struct {
 }
 
-func (r *RawResource) Render(c *gin.Context, path string) {
-	c.Writer.Header().Set("X-QuickSite-Mode", "Raw")
+func (r RawResource) MediaType() string {
+	return "text/plain"
+}
 
+func (r RawResource) ResourceMode() string {
+	return "text"
+}
+
+func (r RawResource) Render(c *gin.Context, path string) {
 	c.Writer.WriteString("RAW: ")
 	c.Writer.WriteString(path)
 }

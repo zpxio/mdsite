@@ -18,18 +18,19 @@ package resource
 
 import "github.com/gin-gonic/gin"
 
-type MarkdownResource struct {
+type TextResource struct {
+	RawResource
 }
 
-func (r MarkdownResource) MediaType() string {
-	return "text/html"
+func (r TextResource) MediaType() string {
+	return "text/plain"
 }
 
-func (r MarkdownResource) ResourceMode() string {
-	return "Markdown"
+func (r TextResource) ResourceMode() string {
+	return "text"
 }
 
-func (r MarkdownResource) Render(c *gin.Context, path string) {
-	c.Writer.WriteString("Path: ")
+func (r TextResource) Render(c *gin.Context, path string) {
+	c.Writer.WriteString("Text: ")
 	c.Writer.WriteString(path)
 }

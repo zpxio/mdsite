@@ -28,7 +28,12 @@ var resourceRenderer = make(map[string]resource.Renderer)
 var missingRenderer = resource.MissingResource{}
 
 func init() {
-	resourceRenderer["md"] = &resource.MarkdownResource{}
+	registerRenderer("md", resource.MarkdownResource{})
+	registerRenderer("txt", resource.TextResource{})
+}
+
+func registerRenderer(suffix string, renderer resource.Renderer) {
+	resourceRenderer[suffix] = renderer
 }
 
 type PageData struct {
@@ -42,6 +47,10 @@ func AttachPageHandler(d *Dispatcher) {
 func Page(c *gin.Context) {
 	resource := c.Request.URL.Path
 	renderer, rcFile := FindResourceFile(c, resource)
+
+	// Set up headers
+	c.Header("X-Resource-Mode", renderer.ResourceMode())
+	c.Header("Content-Type", renderer.MediaType())
 
 	renderer.Render(c, rcFile)
 }

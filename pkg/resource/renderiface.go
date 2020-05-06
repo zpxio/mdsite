@@ -20,4 +20,6 @@ import "github.com/gin-gonic/gin"
 
 type Renderer interface {
 	Render(c *gin.Context, resourcePath string)
+	MediaType() string
+	ResourceMode() string
 }
