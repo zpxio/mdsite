@@ -16,7 +16,13 @@
 
 package resource
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/apex/log"
+	"github.com/gin-gonic/gin"
+	"github.com/gomarkdown/markdown"
+	"io/ioutil"
+	"net/http"
+)
 
 type MarkdownResource struct {
 }
@@ -30,6 +36,20 @@ func (r MarkdownResource) ResourceMode() string {
 }
 
 func (r MarkdownResource) Render(c *gin.Context, path string) {
-	c.Writer.WriteString("Path: ")
-	c.Writer.WriteString(path)
+	mdData, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		log.Errorf("Failed to read markdown data [%s]: %s", path, err)
+		return
+	}
+
+	htData := markdown.ToHTML(mdData, nil, nil)
+
+	_, err = c.Writer.Write(htData)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		log.Errorf("Failed to write html data [%s]: %s", path, err)
+		return
+	}
 }
