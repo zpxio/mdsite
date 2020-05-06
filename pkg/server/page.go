@@ -20,6 +20,7 @@ import (
 	"github.com/apex/log"
 	"github.com/gin-gonic/gin"
 	"github.com/zpxio/mdsite/pkg/resource"
+	"net/http"
 	"os"
 	"path"
 )
@@ -59,12 +60,18 @@ func FindResourceFile(c *gin.Context, resource string) (resource.Renderer, strin
 	base := SiteBaseDirectory(c)
 	rcPrefix := path.Join(base, resource)
 
+	// Assume we'll find a resource
+	c.Status(http.StatusOK)
+
 	for suffix, renderer := range resourceRenderer {
 		rcPath := rcPrefix + "." + suffix
 		if fileExists(rcPath) {
 			return renderer, rcPath
 		}
 	}
+
+	// We didn't find a resource
+	c.Status(http.StatusNotFound)
 
 	return &missingRenderer, resource
 }

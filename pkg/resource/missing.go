@@ -18,7 +18,6 @@ package resource
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type MissingResource struct {
@@ -33,8 +32,6 @@ func (r MissingResource) ResourceMode() string {
 }
 
 func (r MissingResource) Render(c *gin.Context, path string) {
-	c.Status(http.StatusNotFound)
-
 	c.Writer.WriteString("Missing: ")
 	c.Writer.WriteString(path)
 }
