@@ -29,6 +29,20 @@ func TestGlobalSuite(t *testing.T) {
 	suite.Run(t, new(GlobalSuite))
 }
 
+func (s *GlobalSuite) TestUnregistered() {
+	globalConf = nil
+
+	s.Panics(func() {
+		Global()
+	})
+}
+
+func (s *GlobalSuite) TestNilRegistration() {
+	s.Panics(func() {
+		SetGlobal(nil)
+	})
+}
+
 func (s *GlobalSuite) TestRegistration() {
 	v := Create()
 
