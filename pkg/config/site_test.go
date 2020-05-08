@@ -1,0 +1,157 @@
+/*
+ * Copyright 2020 zpxio (Jeff Sharpe)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package config
+
+import (
+	"bytes"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/yaml.v2"
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+type SiteSuite struct {
+	suite.Suite
+
+	testdataPath string
+}
+
+func (s *SiteSuite) SetupTest() {
+	v := Create()
+	cwd, cwdErr := os.Getwd()
+	s.Require().NoError(cwdErr)
+
+	basedir := filepath.Dir(filepath.Dir(cwd))
+	s.testdataPath = filepath.Join(basedir, "testdata")
+	v.ConfigPath = s.testdataPath
+
+	SetGlobal(v)
+}
+
+func TestSiteSuite(t *testing.T) {
+	suite.Run(t, new(SiteSuite))
+}
+
+func (s *SiteSuite) TestParseTemplateString_Simple() {
+	t, err := loadTemplate("test", "<div>{{.}}</div>")
+
+	s.NoError(err)
+	s.Require().NotNil(t)
+
+	buf := bytes.Buffer{}
+	t.Execute(&buf, "TEST")
+
+	s.Equal("<div>TEST</div>", buf.String())
+}
+
+func (s *SiteSuite) TestParseTemplateString_BadSyntax() {
+	t, err := loadTemplate("test", "<div>{{.</div>")
+
+	s.Error(err)
+	s.Nil(t)
+}
+
+func (s *SiteSuite) TestInitTemplateString_Simple() {
+	t := initTemplate("test", "<div>{{.}}</div>")
+
+	s.Require().NotNil(t)
+
+	buf := bytes.Buffer{}
+	t.Execute(&buf, "TEST")
+
+	s.Equal("<div>TEST</div>", buf.String())
+}
+
+func (s *SiteSuite) TestINitTemplateString_BadSyntax() {
+	s.Panics(func() {
+		t := initTemplate("test", "<div>{{.</div>")
+
+		s.NotNil(t)
+	})
+}
+
+func (s *SiteSuite) TestRenderTemplateParsing_String() {
+	rt := RenderTemplate{pageTemplate: initTemplate("test", "<div>{{.}}</div>")}
+
+	err := yaml.Unmarshal([]byte("<section>{{.}}</section>"), &rt)
+
+	s.Require().NoError(err)
+
+	buf := bytes.Buffer{}
+	err = rt.pageTemplate.Execute(&buf, "TEST")
+
+	s.Require().NoError(err)
+	s.Equal("<section>TEST</section>", buf.String())
+}
+
+func (s *SiteSuite) TestResolveTemplate_String() {
+	t, err := resolveTemplate("test", "<section>{{.}}</section>")
+	s.Require().NoError(err)
+
+	buf := bytes.Buffer{}
+	err = t.Execute(&buf, "TEST")
+
+	s.Require().NoError(err)
+	s.Equal("<section>TEST</section>", buf.String())
+}
+
+func (s *SiteSuite) TestResolveTemplate_AbsPath() {
+	tmplPath := filepath.Join(Global().ConfigPath, "templates", "div_wrapper.tpl.html")
+	t, err := resolveTemplate("test", tmplPath)
+	s.Require().NoError(err)
+
+	buf := bytes.Buffer{}
+	err = t.Execute(&buf, "TEST")
+
+	s.Require().NoError(err)
+	s.Equal("<div>TEST</div>", buf.String())
+}
+
+func (s *SiteSuite) TestResolveTemplate_RelPath() {
+	tmplPath := filepath.Join("templates", "section_wrapper.tpl.html")
+	t, err := resolveTemplate("test", tmplPath)
+	s.Require().NoError(err)
+
+	buf := bytes.Buffer{}
+	err = t.Execute(&buf, "TEST")
+
+	s.Require().NoError(err)
+	s.Equal("<section>TEST</section>", buf.String())
+}
+
+func (s *SiteSuite) TestResolveTemplate_BadString() {
+	t, err := resolveTemplate("test", "<section>{{{{.}}</section>")
+
+	s.Error(err)
+	s.Nil(t)
+}
+
+func (s *SiteSuite) TestResolveTemplate_Unknown() {
+	t, err := resolveTemplate("test", "<section></section>")
+
+	s.Error(err)
+	s.Nil(t)
+}
+
+func (s *SiteSuite) TestLoadTemplateFile_Missing() {
+	tmplPath := filepath.Join(Global().ConfigPath, "templates", "missing.tpl.html")
+	t, err := loadTemplateFile("test", tmplPath)
+
+	s.Error(err)
+	s.Nil(t)
+}
