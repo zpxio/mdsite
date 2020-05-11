@@ -1,0 +1,7 @@
+<section class="toc">
+    <ul class="page-list">
+        {{range .Pages}}
+            <li class="toc-item" id="toc-{{.Id}}"><a href="{{.Url}}">{{.Label}}</a></li>
+        {{end}}
+    </ul>
+</section>

@@ -30,30 +30,36 @@ import (
 )
 
 type Site struct {
-	markdown MarkdownRenderConfig
-	html     HtmlRenderConfig
+	Title    string               `yaml:"title"`
+	Markdown MarkdownRenderConfig `yaml:"markdown"`
+	Html     HtmlRenderConfig     `yaml:"html"`
+	Contents ContentsRenderConfig `yaml:"toc"`
 }
 
 type HtmlRenderConfig struct {
-	pageTemplate RenderTemplate
+	PageTemplate *RenderTemplate `yaml:"pageTemplate"`
 }
 
 type MarkdownRenderConfig struct {
-	pageTemplate RenderTemplate
+	PageTemplate *RenderTemplate `yaml:"pageTemplate"`
+}
+
+type ContentsRenderConfig struct {
+	PageTemplate *RenderTemplate `yaml:"pageTemplate"`
 }
 
 type RenderTemplate struct {
 	tpl *template.Template
 }
 
-var templateSerial int = 0
+var templateSerial = 0
 
 func nextTemplateName() string {
 	templateSerial++
 	return fmt.Sprintf("template-%05d", templateSerial)
 }
 
-func createRenderTemplate(name string, tpl string) RenderTemplate {
+func createRenderTemplate(name string, tpl string) *RenderTemplate {
 	rt := RenderTemplate{}
 
 	pt, err := resolveTemplate(name, tpl)
@@ -62,7 +68,7 @@ func createRenderTemplate(name string, tpl string) RenderTemplate {
 	}
 	rt.tpl = pt
 
-	return rt
+	return &rt
 }
 
 func (t *RenderTemplate) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -71,6 +77,7 @@ func (t *RenderTemplate) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	if err != nil {
 		return err
 	}
+	log.Infof("Unmarshaling: %s", tmplSt)
 
 	rt, err := resolveTemplate(nextTemplateName(), tmplSt)
 	if err != nil {
@@ -82,6 +89,10 @@ func (t *RenderTemplate) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	return nil
 }
 
+func (t RenderTemplate) String() string {
+	return fmt.Sprintf("Template[%s]", t.tpl.Name())
+}
+
 func resolveTemplate(name string, tmpl string) (*template.Template, error) {
 	// Try an absolute path
 	if filepath.IsAbs(tmpl) {
@@ -91,14 +102,13 @@ func resolveTemplate(name string, tmpl string) (*template.Template, error) {
 
 	// Try a relative path
 	path := filepath.Join(Global().ConfigPath, tmpl)
-	log.Infof("Resolving template: %s", path)
 	if _, err := os.Stat(path); err == nil {
 		// Load the relative path
 		return loadTemplateFile(name, path)
 	}
 
 	// See if the string looks like a template
-	if strings.Contains(tmpl, "{{.}}") {
+	if strings.Contains(tmpl, "{{") {
 		// Load the template as a string
 		t, err := loadTemplate("", tmpl)
 		if err != nil {
@@ -116,12 +126,14 @@ func loadTemplateFile(name string, tmplPath string) (*template.Template, error) 
 		return nil, err
 	}
 
+	log.Infof("Reading template file [%s]: %s", name, tmplPath)
 	return loadTemplate(name, string(templateData))
 }
 
 func loadTemplate(name string, tmpl string) (*template.Template, error) {
 	t := template.New(name)
 	_, err := t.Parse(tmpl)
+	log.Infof("Parsed: %s", tmpl)
 	if err != nil {
 		log.Errorf("Could not parse template [%s]: %s", name, err)
 		return nil, err
@@ -143,30 +155,35 @@ func initTemplate(name string, tmpl string) *template.Template {
 
 func defaultSiteConfig() Site {
 	s := Site{
-		markdown: MarkdownRenderConfig{
-			pageTemplate: createRenderTemplate("md-default", `<div id="content">{{.}}</div>"`),
+		Title: "Default",
+		Markdown: MarkdownRenderConfig{
+			PageTemplate: createRenderTemplate("md-default", `<div id="content markdown">{{.}}</div>"`),
 		},
-		html: HtmlRenderConfig{
-			pageTemplate: createRenderTemplate("html-default", `<div id="content">{{.}}</div>"`),
+		Html: HtmlRenderConfig{
+			PageTemplate: createRenderTemplate("html-default", `<div id="content html">{{.}}</div>"`),
 		},
 	}
 
 	return s
 }
 
-func LoadSiteConfig(path string) (Site, error) {
+func LoadSiteConfig() (Site, error) {
 	base := defaultSiteConfig()
 
 	// Try to load file data
-	data, err := ioutil.ReadFile(path)
+	siteFile := filepath.Join(Global().ConfigPath, "site.yml")
+	data, err := ioutil.ReadFile(siteFile)
 	if err != nil {
 		return base, err
 	}
 
+	log.Infof("Loading site config: %s", siteFile)
 	err = yaml.Unmarshal(data, &base)
 	if err != nil {
+		log.Errorf("Failed to load config: %s", err)
 		return base, err
 	}
+	log.Infof("Config: %+v", base)
 
 	return base, nil
 }
