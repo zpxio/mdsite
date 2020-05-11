@@ -43,7 +43,7 @@ type MarkdownRenderConfig struct {
 }
 
 type RenderTemplate struct {
-	pageTemplate *template.Template
+	tpl *template.Template
 }
 
 var templateSerial int = 0
@@ -60,7 +60,7 @@ func createRenderTemplate(name string, tpl string) RenderTemplate {
 	if err != nil {
 		panic(fmt.Sprintf("Failed to resolve template [%s]: %s", name, err))
 	}
-	rt.pageTemplate = pt
+	rt.tpl = pt
 
 	return rt
 }
@@ -77,7 +77,7 @@ func (t *RenderTemplate) UnmarshalYAML(unmarshal func(interface{}) error) error 
 		return err
 	}
 
-	t.pageTemplate = rt
+	t.tpl = rt
 
 	return nil
 }

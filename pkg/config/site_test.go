@@ -86,14 +86,14 @@ func (s *SiteSuite) TestINitTemplateString_BadSyntax() {
 }
 
 func (s *SiteSuite) TestRenderTemplateParsing_String() {
-	rt := RenderTemplate{pageTemplate: initTemplate("test", "<div>{{.}}</div>")}
+	rt := RenderTemplate{tpl: initTemplate("test", "<div>{{.}}</div>")}
 
 	err := yaml.Unmarshal([]byte("<section>{{.}}</section>"), &rt)
 
 	s.Require().NoError(err)
 
 	buf := bytes.Buffer{}
-	err = rt.pageTemplate.Execute(&buf, "TEST")
+	err = rt.tpl.Execute(&buf, "TEST")
 
 	s.Require().NoError(err)
 	s.Equal("<section>TEST</section>", buf.String())
