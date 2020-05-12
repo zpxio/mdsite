@@ -213,7 +213,7 @@ func (s *SiteSuite) TestLoadSiteConfig() {
 	s.Equal("Test01", site.Title)
 
 	buf := bytes.Buffer{}
-	execErr := site.Markdown.PageTemplate.tpl.Execute(&buf, "TEST")
+	execErr := site.Markdown.BlockTemplate.tpl.Execute(&buf, "TEST")
 	s.NoError(execErr)
 	s.Equal(`<section class="pageContent markdown">TEST</section>`, buf.String())
 }

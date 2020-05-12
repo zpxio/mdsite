@@ -36,12 +36,16 @@ type Site struct {
 	Contents ContentsRenderConfig `yaml:"toc"`
 }
 
-type HtmlRenderConfig struct {
+type GlobalRenderConfig struct {
 	PageTemplate *RenderTemplate `yaml:"pageTemplate"`
 }
 
+type HtmlRenderConfig struct {
+	BlockTemplate *RenderTemplate `yaml:"blockTemplate"`
+}
+
 type MarkdownRenderConfig struct {
-	PageTemplate *RenderTemplate `yaml:"pageTemplate"`
+	BlockTemplate *RenderTemplate `yaml:"blockTemplate"`
 }
 
 type ContentsRenderConfig struct {
@@ -157,10 +161,10 @@ func defaultSiteConfig() Site {
 	s := Site{
 		Title: "Default",
 		Markdown: MarkdownRenderConfig{
-			PageTemplate: createRenderTemplate("md-default", `<div id="content markdown">{{.}}</div>"`),
+			BlockTemplate: createRenderTemplate("md-default", `<div id="content markdown">{{.}}</div>"`),
 		},
 		Html: HtmlRenderConfig{
-			PageTemplate: createRenderTemplate("html-default", `<div id="content html">{{.}}</div>"`),
+			BlockTemplate: createRenderTemplate("html-default", `<div id="content html">{{.}}</div>"`),
 		},
 	}
 

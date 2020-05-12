@@ -1,12 +1,12 @@
 ---
 title: Test01
 html:
-  pageTemplate: >-
+  blockTemplate: >-
     <section class="pageContent">
     {{.}}
     </section>
 markdown:
-  pageTemplate: template/markdown-page.gohtml
+  blockTemplate: template/markdown-page.gohtml
 toc:
   pageTemplate: template/toc.gohtml
 

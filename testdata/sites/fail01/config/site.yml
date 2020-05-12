@@ -1,9 +1,9 @@
 ---
 title: Fail01
 html:
-  pageTemplate: template/missing.gohtml
+  blockTemplate: template/missing.gohtml
 markdown:
-  pageTemplate: >-
+  blockTemplate: >-
     <section class"pageContent markdown">
     {{.}}
     </section>
