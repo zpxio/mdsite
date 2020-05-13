@@ -23,6 +23,7 @@ import (
 	"github.com/zpxio/mdsite/pkg/util"
 	"gopkg.in/yaml.v2"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -31,6 +32,7 @@ import (
 
 type Site struct {
 	Title    string               `yaml:"title"`
+	Global   GlobalRenderConfig   `yaml:"global"`
 	Markdown MarkdownRenderConfig `yaml:"markdown"`
 	Html     HtmlRenderConfig     `yaml:"html"`
 	Contents ContentsRenderConfig `yaml:"toc"`
@@ -91,6 +93,10 @@ func (t *RenderTemplate) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	t.tpl = rt
 
 	return nil
+}
+
+func (t *RenderTemplate) Execute(w io.Writer, data interface{}) error {
+	return t.tpl.Execute(w, data)
 }
 
 func (t RenderTemplate) String() string {

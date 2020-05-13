@@ -17,9 +17,12 @@
 package server
 
 import (
+	"bytes"
 	"github.com/apex/log"
 	"github.com/gin-gonic/gin"
+	"github.com/zpxio/mdsite/pkg/config"
 	"github.com/zpxio/mdsite/pkg/resource"
+	"html/template"
 	"net/http"
 	"os"
 	"path"
@@ -31,14 +34,11 @@ var missingRenderer = resource.MissingResource{}
 func init() {
 	registerRenderer("md", resource.MarkdownResource{})
 	registerRenderer("txt", resource.TextResource{})
+	registerRenderer("html", resource.HtmlResource{})
 }
 
 func registerRenderer(suffix string, renderer resource.Renderer) {
 	resourceRenderer[suffix] = renderer
-}
-
-type PageData struct {
-	content []byte
 }
 
 func AttachPageHandler(d *Dispatcher) {
@@ -46,14 +46,23 @@ func AttachPageHandler(d *Dispatcher) {
 }
 
 func Page(c *gin.Context) {
-	resource := c.Request.URL.Path
-	renderer, rcFile := FindResourceFile(c, resource)
+	rc := c.Request.URL.Path
+	renderer, rcFile := FindResourceFile(c, rc)
+
+	data := resource.InitRenderData(c, rcFile)
 
 	// Set up headers
 	c.Header("X-Resource-Mode", renderer.ResourceMode())
 	c.Header("Content-Type", renderer.MediaType())
 
-	renderer.Render(c, rcFile)
+	contentBuf := &bytes.Buffer{}
+	renderer.Render(contentBuf, data)
+
+	pd := resource.InitRenderData(c, rcFile)
+	pd.Title = config.Global().SiteConfig.Title
+	pd.Content = template.HTML(contentBuf.String())
+
+	config.Global().SiteConfig.Global.PageTemplate.Execute(c.Writer, pd)
 }
 
 func FindResourceFile(c *gin.Context, resource string) (resource.Renderer, string) {

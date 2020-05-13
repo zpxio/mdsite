@@ -16,10 +16,10 @@
 
 package resource
 
-import "github.com/gin-gonic/gin"
+import "io"
 
 type Renderer interface {
-	Render(c *gin.Context, resourcePath string)
+	Render(w io.Writer, data *RenderData) error
 	MediaType() string
 	ResourceMode() string
 }

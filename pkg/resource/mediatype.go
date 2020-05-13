@@ -16,24 +16,8 @@
 
 package resource
 
-import (
-	"io"
+type MediaType string
+
+const (
+	MediaHtml = "text/html"
 )
-
-type MissingResource struct {
-}
-
-func (r MissingResource) MediaType() string {
-	return "text/html"
-}
-
-func (r MissingResource) ResourceMode() string {
-	return "Not-Found"
-}
-
-func (r MissingResource) Render(w io.Writer, data *RenderData) error {
-	io.WriteString(w, "Missing: ")
-	io.WriteString(w, data.Resource)
-
-	return nil
-}

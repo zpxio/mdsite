@@ -16,7 +16,9 @@
 
 package resource
 
-import "github.com/gin-gonic/gin"
+import (
+	"io"
+)
 
 type TextResource struct {
 	RawResource
@@ -30,7 +32,15 @@ func (r TextResource) ResourceMode() string {
 	return "text"
 }
 
-func (r TextResource) Render(c *gin.Context, path string) {
-	c.Writer.WriteString("Text: ")
-	c.Writer.WriteString(path)
+func (r TextResource) Render(w io.Writer, data *RenderData) error {
+	_, err := io.WriteString(w, "Text: ")
+	if err != nil {
+		return err
+	}
+	_, err = io.WriteString(w, data.Resource)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

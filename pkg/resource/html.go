@@ -17,23 +17,36 @@
 package resource
 
 import (
+	"github.com/apex/log"
 	"io"
+	"io/ioutil"
 )
 
-type MissingResource struct {
+type HtmlResource struct {
+	RawResource
 }
 
-func (r MissingResource) MediaType() string {
+func (r HtmlResource) MediaType() string {
 	return "text/html"
 }
 
-func (r MissingResource) ResourceMode() string {
-	return "Not-Found"
+func (r HtmlResource) ResourceMode() string {
+	return "html"
 }
 
-func (r MissingResource) Render(w io.Writer, data *RenderData) error {
-	io.WriteString(w, "Missing: ")
-	io.WriteString(w, data.Resource)
+func (r HtmlResource) Render(w io.Writer, data *RenderData) error {
+	htData, err := ioutil.ReadFile(data.Resource)
+
+	if err != nil {
+		log.Errorf("Failed to read file data [%s]: %s", data.Resource, err)
+		return err
+	}
+
+	_, err = w.Write(htData)
+	if err != nil {
+		log.Errorf("Failed to write html data [%s]: %s", data.Resource, err)
+		return err
+	}
 
 	return nil
 }

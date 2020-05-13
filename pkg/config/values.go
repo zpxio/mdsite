@@ -39,6 +39,8 @@ type Values struct {
 	ListenPort uint16
 
 	TestMode bool
+
+	SiteConfig Site
 }
 
 func Create() *Values {
@@ -49,6 +51,8 @@ func Create() *Values {
 		ListenPort: DefaultPort,
 
 		TestMode: false,
+
+		SiteConfig: Site{},
 	}
 
 	return &v

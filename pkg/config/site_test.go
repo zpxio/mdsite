@@ -197,7 +197,7 @@ func (s *SiteSuite) TestUnmarshal_AbsFile() {
 	s.Require().NoError(err)
 
 	buf := bytes.Buffer{}
-	err = rt.tpl.Execute(&buf, "TEST")
+	err = rt.Execute(&buf, "TEST")
 
 	s.Require().NoError(err)
 	s.Equal("<div>TEST</div>", buf.String())
@@ -213,7 +213,7 @@ func (s *SiteSuite) TestLoadSiteConfig() {
 	s.Equal("Test01", site.Title)
 
 	buf := bytes.Buffer{}
-	execErr := site.Markdown.BlockTemplate.tpl.Execute(&buf, "TEST")
+	execErr := site.Markdown.BlockTemplate.Execute(&buf, "TEST")
 	s.NoError(execErr)
 	s.Equal(`<section class="pageContent markdown">TEST</section>`, buf.String())
 }

@@ -35,6 +35,15 @@ func main() {
 	conf := config.Create()
 	config.SetupFlags(conf)
 	conf.Load()
+	config.SetGlobal(conf)
+
+	// Load config
+	var err error
+	conf.SiteConfig, err = config.LoadSiteConfig()
+	if err != nil {
+		log.Errorf("Failed to load site configuration: %s", err)
+		panic("Cannot load site config")
+	}
 
 	// Set up signal monitoring
 	termSignals := make(chan os.Signal, 1)

@@ -17,23 +17,38 @@
 package resource
 
 import (
-	"io"
+	"github.com/gin-gonic/gin"
+	"html/template"
 )
 
-type MissingResource struct {
+type RenderData struct {
+	Resource string
+
+	Title string
+
+	Stylesheets []Stylesheet
+	Scripts     []Javascript
+
+	StatusCode int
+	MediaType  MediaType
+
+	Content template.HTML
 }
 
-func (r MissingResource) MediaType() string {
-	return "text/html"
+type Stylesheet struct {
+	Url string
 }
 
-func (r MissingResource) ResourceMode() string {
-	return "Not-Found"
+type Javascript struct {
+	Url    string
+	weight uint8
 }
 
-func (r MissingResource) Render(w io.Writer, data *RenderData) error {
-	io.WriteString(w, "Missing: ")
-	io.WriteString(w, data.Resource)
+func InitRenderData(c *gin.Context, resource string) *RenderData {
+	pd := RenderData{
+		Resource:  resource,
+		MediaType: gin.MIMEHTML,
+	}
 
-	return nil
+	return &pd
 }
