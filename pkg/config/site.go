@@ -40,6 +40,7 @@ type Site struct {
 
 type GlobalRenderConfig struct {
 	PageTemplate *RenderTemplate `yaml:"pageTemplate"`
+	TocTemplate  *RenderTemplate `yaml:"tocTemplate"`
 }
 
 type HtmlRenderConfig struct {
@@ -83,7 +84,6 @@ func (t *RenderTemplate) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	if err != nil {
 		return err
 	}
-	log.Infof("Unmarshaling: %s", tmplSt)
 
 	rt, err := resolveTemplate(nextTemplateName(), tmplSt)
 	if err != nil {
@@ -136,14 +136,12 @@ func loadTemplateFile(name string, tmplPath string) (*template.Template, error) 
 		return nil, err
 	}
 
-	log.Infof("Reading template file [%s]: %s", name, tmplPath)
 	return loadTemplate(name, string(templateData))
 }
 
 func loadTemplate(name string, tmpl string) (*template.Template, error) {
 	t := template.New(name)
 	_, err := t.Parse(tmpl)
-	log.Infof("Parsed: %s", tmpl)
 	if err != nil {
 		log.Errorf("Could not parse template [%s]: %s", name, err)
 		return nil, err
@@ -193,7 +191,6 @@ func LoadSiteConfig() (Site, error) {
 		log.Errorf("Failed to load config: %s", err)
 		return base, err
 	}
-	log.Infof("Config: %+v", base)
 
 	return base, nil
 }
