@@ -1,0 +1,7 @@
+---
+title: Sample Site
+global:
+  pageTemplate: template/global.gohtml
+  tocTemplate: template/toc.gohtml
+markdown:
+  pageTemplate: template/md-page.gohtml

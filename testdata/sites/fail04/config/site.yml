@@ -1,0 +1,21 @@
+---
+title: Fail03
+html:
+  blockTemplate: >-
+    <section class"pageContent markdown">
+    {{.}}
+    </section>
+markdown:
+  blockTemplate: >-
+    <section class"pageContent markdown">
+    {{.}}
+    </section>
+toc:
+  pageTemplate: >-
+    <section class="toc">
+    <ul class="page-list">
+    {{range .Pages}}
+      <li class="toc-item" id="toc-{{.Id}}"><a href="{{.Url}}">{{.Label}}</a></li>
+    {{end}}
+    </ul>
+    </section>
