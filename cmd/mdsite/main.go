@@ -22,6 +22,7 @@ import (
 	"github.com/apex/log/handlers/text"
 	"github.com/zpxio/mdsite/pkg/config"
 	"github.com/zpxio/mdsite/pkg/server"
+	"github.com/zpxio/mdsite/pkg/site"
 	"os"
 	"os/signal"
 	"syscall"
@@ -44,6 +45,9 @@ func main() {
 		log.Errorf("Failed to load site configuration: %s", err)
 		panic("Cannot load site config")
 	}
+
+	// Index the Site
+	site.Index()
 
 	// Set up signal monitoring
 	termSignals := make(chan os.Signal, 1)

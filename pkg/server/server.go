@@ -64,6 +64,7 @@ func (d *Dispatcher) AttachUtility() {
 
 func (d *Dispatcher) AttachPages() {
 	AttachIndex(d)
+	AttachToc(d)
 	AttachPageHandler(d)
 }
 

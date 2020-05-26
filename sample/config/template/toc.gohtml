@@ -1,7 +1,18 @@
-<section class="toc">
-    <ul class="page-list">
-        {{range .Pages}}
-            <li class="toc-item" id="toc-{{.Id}}"><a href="{{.Url}}">{{.Label}}</a></li>
-        {{end}}
-    </ul>
-</section>
+<html>
+    <head>
+        <title>{{.Title}}</title>
+    </head>
+    <body>
+        <header>
+        </header>
+        <section class="toc">
+            <ul class="page-list">
+                {{range .Pages}}
+                    <li class="toc-item" id="toc-{{.Id}}"><a href="{{.Url}}">{{.Label}}</a></li>
+                {{end}}
+            </ul>
+        </section>
+        <footer>
+        </footer>
+    </body>
+</html>
