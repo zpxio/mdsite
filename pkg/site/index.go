@@ -24,21 +24,46 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"sync"
 )
 
-type Index struct {
+type PageIndex struct {
 	PageLookup    map[string]*PageEntry
 	Pages         []*PageEntry
 	WeightLookup  map[string]float64
 	DefaultWeight float64
+	Title         string
 }
 
-func BuildIndex() (*Index, error) {
-	i := Index{
+var indexInit sync.Once
+var globalIndex *PageIndex
+
+func Index() *PageIndex {
+	indexInit.Do(func() {
+		ReIndex()
+	})
+
+	return globalIndex
+}
+
+func ReIndex() *PageIndex {
+	var err error
+	globalIndex, err = BuildIndex()
+
+	if err != nil {
+		panic("failed to build site index")
+	}
+
+	return globalIndex
+}
+
+func BuildIndex() (*PageIndex, error) {
+	i := PageIndex{
 		PageLookup:    make(map[string]*PageEntry),
 		Pages:         []*PageEntry{},
 		WeightLookup:  make(map[string]float64),
 		DefaultWeight: DefaultWeight,
+		Title:         "Contents",
 	}
 
 	// Read order data
@@ -76,7 +101,7 @@ type OrderInfo struct {
 	Order         []string `yaml:"order"`
 }
 
-func (i *Index) readOrder() {
+func (i *PageIndex) readOrder() {
 	var order = OrderInfo{
 		DefaultWeight: DefaultWeight,
 		OrderOrigin:   1,
@@ -109,7 +134,7 @@ func (i *Index) readOrder() {
 	}
 }
 
-func (i *Index) addResource(path string) {
+func (i *PageIndex) addResource(path string) {
 	p, err := LoadPageEntry(path)
 	if err != nil {
 		log.Errorf("Failed to load resource [%s]: %s", path, err)
@@ -125,7 +150,7 @@ func (i *Index) addResource(path string) {
 	i.PageLookup[p.Url] = p
 }
 
-func (i *Index) calculateOrder() {
+func (i *PageIndex) calculateOrder() {
 	ordered := make([]*PageEntry, len(i.PageLookup))
 
 	j := 0

@@ -22,6 +22,7 @@ import (
 	"github.com/zpxio/mdsite/pkg/config"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -98,4 +99,43 @@ func (s *SiteSuite) TestCreateIndex_BadOrderFile() {
 	s.NotNil(i)
 
 	s.Equal(float64(DefaultWeight), i.Pages[0].ListWeight)
+}
+
+func (s *SiteSuite) TestIndex_Fails() {
+	s.loadSite("fail03")
+	config.Global().SitePath = "/@@@@/BadPATH"
+
+	s.Panics(func() {
+		i := ReIndex()
+		s.Nil(i)
+	})
+}
+
+func (s *SiteSuite) TestReIndex() {
+	i := ReIndex()
+
+	s.NotNil(i)
+
+	i2 := ReIndex()
+	s.NotEqual(reflect.ValueOf(i).Pointer(), reflect.ValueOf(i2).Pointer())
+}
+
+func (s *SiteSuite) TestIndex_Singleton() {
+	i := Index()
+
+	s.NotNil(i)
+
+	i2 := Index()
+	s.Equal(reflect.ValueOf(i).Pointer(), reflect.ValueOf(i2).Pointer())
+}
+
+func (s *SiteSuite) TestIndex_PostReIndex() {
+	i0 := Index()
+	i := ReIndex()
+
+	s.NotNil(i)
+
+	i2 := Index()
+	s.NotEqual(reflect.ValueOf(i).Pointer(), reflect.ValueOf(i0).Pointer())
+	s.Equal(reflect.ValueOf(i).Pointer(), reflect.ValueOf(i2).Pointer())
 }
